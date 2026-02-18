@@ -13,20 +13,16 @@ export default async function FuneralLayout({
 
     if (!user) redirect('/login')
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*, organization:organizations(*)')
-        .eq('id', user.id)
-        .maybeSingle()
-
-    if (!profile) redirect('/login')
+    if (!profile) {
+        redirect('/login')
+    }
 
     // Super admin no debería estar aquí si hay un layout dedicado
     if (profile.role === 'super_admin') {
-        // No redireccionamos aquí para permitir que super-admin vea dashboards de orgs si es necesario, 
-        // pero el sidebar ya cambia según rol.
+        // Permitir
     } else if (!profile.organization_id) {
-        throw new Error('Usuario sin organización asignada')
+        // En lugar de arrojar error que rompe Vercel, redirigimos
+        redirect('/login')
     }
 
     return <AppLayout>{children}</AppLayout>
