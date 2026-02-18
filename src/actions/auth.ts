@@ -28,7 +28,7 @@ export async function login(formData: FormData) {
         .from('organizations')
         .select('id, is_active')
         .eq('org_code', orgCode.toLowerCase())
-        .single()
+        .maybeSingle()
 
     if (!org) return { error: 'Organización no encontrada' }
     if (!org.is_active) return { error: 'Organización inactiva' }
@@ -41,7 +41,7 @@ export async function login(formData: FormData) {
         .from('profiles')
         .select('organization_id')
         .eq('email', email)
-        .single()
+        .maybeSingle()
 
     if (profile?.organization_id !== org.id) {
         await supabase.auth.signOut()
