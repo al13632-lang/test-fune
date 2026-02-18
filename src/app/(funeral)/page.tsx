@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { KPICard, DataTable, StatusBadge } from '@/shared/components'
 import { Users, Calendar, Receipt, TrendingUp } from 'lucide-react'
@@ -7,6 +8,16 @@ export default async function FuneralDashboard() {
     const supabase = await createClient()
 
     // Queries simuladas para el dashboard de la org
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+        .single()
+
+    if (profile?.role === 'super_admin') {
+        redirect('/super-admin')
+    }
+
     const stats = [
         { title: 'Familias', value: '12', icon: Users, color: 'blue' as const },
         { title: 'Ceremonias Hoy', value: '2', icon: Calendar, color: 'emerald' as const },
