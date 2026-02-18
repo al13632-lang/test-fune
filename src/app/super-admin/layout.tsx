@@ -8,7 +8,8 @@ export default async function SuperAdminLayout({
     children: React.ReactNode
 }) {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user
 
     if (!user) redirect('/login')
 
@@ -16,7 +17,7 @@ export default async function SuperAdminLayout({
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
     if (!profile || profile.role !== 'super_admin') {
         redirect('/')
