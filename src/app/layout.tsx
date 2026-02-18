@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "FuneralSync Pro - Gestión Funeraria",
   description: "Plataforma SaaS para la gestión integral de funerarias",
-};
+}; // Rebuild trigger for env vars
 
 export default function RootLayout({
   children,
