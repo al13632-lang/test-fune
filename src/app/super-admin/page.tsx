@@ -6,7 +6,8 @@ import type { Organization } from '@/types/database'
 
 export default async function SuperAdminDashboard() {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user
 
     if (!user) {
         redirect('/login')

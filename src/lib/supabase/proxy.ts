@@ -22,10 +22,10 @@ export async function updateSession(request: NextRequest) {
                         return request.cookies.getAll()
                     },
                     setAll(cookiesToSet) {
-                        cookiesToSet.forEach(({ name, value, options }) => {
-                            request.cookies.set(name, value)
+                        cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+                        supabaseResponse = NextResponse.next({
+                            request,
                         })
-                        supabaseResponse = NextResponse.next({ request })
                         cookiesToSet.forEach(({ name, value, options }) =>
                             supabaseResponse.cookies.set(name, value, options)
                         )
@@ -34,34 +34,32 @@ export async function updateSession(request: NextRequest) {
             }
         )
 
-        const { data: { user } } = await supabase.auth.getUser()
+        // IMPORTANTE: Un error aquí suele ser por falta de conectividad o JWT inválido
+        const { data } = await supabase.auth.getUser()
+        const user = data?.user
 
         const authRoutes = ['/login', '/signup', '/forgot-password', '/update-password', '/check-email']
-        const publicRoutes = ['/memorial', '/favicon.ico', '/favicon.svg']
-        const isAuthRoute = authRoutes.some(route => request.nextUrl.pathname.startsWith(route))
-        const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route))
+        const publicRoutes = ['/memorial', '/favicon.ico', '/favicon.svg', '/api']
 
-        // Evitar bucles de redirección
-        if (request.nextUrl.pathname === '/login' && !user) {
-            return supabaseResponse
-        }
+        const path = request.nextUrl.pathname
+        const isAuthRoute = authRoutes.some(route => path.startsWith(route))
+        const isPublicRoute = publicRoutes.some(route => path.startsWith(route))
 
-        // Sin sesión + ruta protegida → redirect a login
-        if (!user && !isAuthRoute && !isPublicRoute && request.nextUrl.pathname !== '/') {
+        // Si es / no redirigir a login, permitir que la página maneje su lógica o el middleware redirija
+        if (!user && !isAuthRoute && !isPublicRoute && path !== '/') {
             const url = request.nextUrl.clone()
             url.pathname = '/login'
             return NextResponse.redirect(url)
         }
 
-        // Con sesión + ruta de auth → redirect a home
         if (user && isAuthRoute) {
-            return NextResponse.redirect(new URL('/', request.url))
+            const url = request.nextUrl.clone()
+            url.pathname = '/'
+            return NextResponse.redirect(url)
         }
 
         return supabaseResponse
     } catch (error) {
-        // En caso de error crítico en el middleware, permitimos que continúe para no bloquear la app
-        console.error('Middleware Error:', error)
         return NextResponse.next({ request })
     }
 }
