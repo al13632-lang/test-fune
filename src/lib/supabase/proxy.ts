@@ -32,7 +32,7 @@ export async function updateSession(request: NextRequest) {
         const path = request.nextUrl.pathname
 
         const isAuthRoute = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/forgot-password')
-        const isPublicRoute = path.startsWith('/memorial') || path.startsWith('/favicon') || path.startsWith('/api') || path.startsWith('/_next') || path === '/test'
+        const isPublicRoute = path.startsWith('/memorial') || path.startsWith('/favicon') || path.startsWith('/api') || path.startsWith('/_next')
 
         if (!user && !isAuthRoute && !isPublicRoute && path !== '/') {
             return NextResponse.redirect(new URL('/login', request.url))
