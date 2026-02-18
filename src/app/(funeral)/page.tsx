@@ -6,13 +6,17 @@ import type { Family } from '@/types/database'
 
 export default async function FuneralDashboard() {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    // Queries simuladas para el dashboard de la org
+    if (!user) {
+        redirect('/login')
+    }
+
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', (await supabase.auth.getUser()).data.user?.id)
-        .single()
+        .eq('id', user.id)
+        .maybeSingle()
 
     if (profile?.role === 'super_admin') {
         redirect('/super-admin')
