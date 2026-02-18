@@ -8,10 +8,18 @@ export default async function FuneralLayout({
     children: React.ReactNode
 }) {
     const supabase = await createClient()
-    const { data } = await supabase.auth.getUser()
-    const user = data?.user
+    const { data: authData } = await supabase.auth.getUser()
+    const user = authData?.user
 
-    if (!user) redirect('/login')
+    if (!user) {
+        redirect('/login')
+    }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*, organization:organizations(*)')
+        .eq('id', user.id)
+        .maybeSingle()
 
     if (!profile) {
         redirect('/login')
@@ -19,7 +27,7 @@ export default async function FuneralLayout({
 
     // Super admin no debería estar aquí si hay un layout dedicado
     if (profile.role === 'super_admin') {
-        // Permitir
+        // Permitir acceso como super-admin
     } else if (!profile.organization_id) {
         // En lugar de arrojar error que rompe Vercel, redirigimos
         redirect('/login')
